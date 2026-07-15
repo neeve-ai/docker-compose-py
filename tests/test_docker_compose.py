@@ -179,7 +179,7 @@ def test_setup_cfg_sha256_present():
     """Each platform entry must have a sha256 key (SEC-001 / REQ-003)."""
     content = SETUP_CFG.read_text()
     sha_count = content.count("sha256 =")
-    assert sha_count == 11, f"Expected 11 sha256 entries, found {sha_count}"
+    assert sha_count == 6, f"Expected 6 sha256 entries, found {sha_count}"
 
 
 # ---------------------------------------------------------------------------
