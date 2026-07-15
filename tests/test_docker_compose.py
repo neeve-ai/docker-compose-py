@@ -29,6 +29,22 @@ SETUP_CFG = REPO_ROOT / "setup.cfg"
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
+def _get_bash() -> str:
+    """Return the bash executable path.
+
+    On Windows, ``bash`` in PATH may resolve to the WSL stub
+    (``C:\\Windows\\System32\\bash.exe``), which requires WSL distributions
+    to be installed and is not available on GitHub Actions runners.  Prefer
+    Git for Windows bash, which is always pre-installed on those runners.
+    """
+    if sys.platform != "win32":
+        return "bash"
+    git_bash = Path(r"C:\Program Files\Git\bin\bash.exe")
+    if git_bash.exists():
+        return str(git_bash)
+    return "bash"
+
+
 def run(*args: str, **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(list(args), capture_output=True, text=True, **kwargs)
 
@@ -288,7 +304,7 @@ def test_update_version_no_args():
     script = REPO_ROOT / "update_version.sh"
     assert script.exists(), "update_version.sh missing"
     result = subprocess.run(
-        ["bash", str(script)],
+        [_get_bash(), str(script)],
         capture_output=True, text=True
     )
     assert result.returncode == 1
@@ -299,7 +315,7 @@ def test_update_version_invalid_format():
     """update_version.sh rejects non-semver version strings."""
     script = REPO_ROOT / "update_version.sh"
     result = subprocess.run(
-        ["bash", str(script), "notaversion"],
+        [_get_bash(), str(script), "notaversion"],
         capture_output=True, text=True
     )
     assert result.returncode == 1
