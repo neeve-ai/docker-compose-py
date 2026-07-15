@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'test-me-*'
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-test:
+    name: build-and-test (${{ matrix.wheel-plat }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux x86_64 — manylinux_2_17 tag required by PyPI (bare linux_x86_64 is rejected)
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_x86_64
+            smoke: true
+          # Linux aarch64
+          - os: ubuntu-24.04-arm
+            arch: ''
+            wheel-plat: manylinux_2_17_aarch64
+            smoke: true
+          # Linux armv7l — cross-build only, no native runner
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_armv7l
+            smoke: false
+          # Linux armv6l — cross-build only, no native runner
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_armv6l
+            smoke: false
+          # Linux ppc64le — cross-build only, no native runner
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_ppc64le
+            smoke: false
+          # Linux s390x — cross-build only, no native runner
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_s390x
+            smoke: false
+          # Linux riscv64 — cross-build only, no native runner
+          - os: ubuntu-latest
+            arch: ''
+            wheel-plat: manylinux_2_17_riscv64
+            smoke: false
+          # macOS Intel x86_64 — use 10.9 deployment target for broad compatibility
+          # NOTE: macOS _PYTHON_HOST_PLATFORM must use dashes (macosx-X.Y-arch),
+          # not underscores — wheel's macosx_libfile.py splits on '-'
+          - os: macos-15-intel
+            arch: ''
+            wheel-plat: macosx-10.9-x86_64
+            smoke: true
+          # macOS Apple Silicon arm64 — 11.0 is the minimum for arm64
+          - os: macos-latest
+            arch: ''
+            wheel-plat: macosx-11.0-arm64
+            smoke: true
+          # Windows x86_64
+          - os: windows-latest
+            arch: x64
+            wheel-plat: win_amd64
+            smoke: true
+          # Windows ARM64 — native runner
+          - os: windows-11-arm
+            arch: ''
+            wheel-plat: win_arm64
+            smoke: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: ${{ matrix.arch }}
+
+      - name: Install build deps
+        run: pip install setuptools wheel setuptools-download pytest
+
+      - name: Install package
+        run: pip install . --no-build-isolation
+
+      - name: Smoke test — docker-compose version
+        if: matrix.smoke != false
+        run: docker-compose version
+
+      - name: Smoke test — docker-compose help
+        if: matrix.smoke != false
+        run: docker-compose --help
+
+      - name: Run tests
+        if: matrix.smoke != false
+        run: pytest tests/
+
+      - name: Build platform wheel
+        env:
+          # Force the correct platform tag; without this:
+          #   - Linux gets bare linux_x86_64 which PyPI rejects (needs manylinux)
+          #   - macOS gets the runner OS version (too new, e.g. macosx_15_0)
+          _PYTHON_HOST_PLATFORM: ${{ matrix.wheel-plat }}
+        run: pip wheel --no-deps --no-build-isolation --wheel-dir dist .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          # Use wheel-plat in the name — ensures uniqueness across matrix entries
+          name: wheels-${{ matrix.wheel-plat }}
+          path: dist/*.whl
+
+  publish-pypi:
+    name: publish-pypi
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-github-release:
+    name: publish-github-release
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.whl
+          tag_name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

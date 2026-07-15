@@ -1,0 +1,7 @@
+- id: docker-compose
+  name: docker-compose config
+  language: python
+  entry: docker-compose
+  args: [config, --quiet]
+  pass_filenames: false
+  types_or: [yaml, file]
