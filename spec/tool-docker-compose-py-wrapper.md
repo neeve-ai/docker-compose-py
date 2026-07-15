@@ -63,7 +63,7 @@ The primary intended use is as a `pre-commit` hook for validating/verifying Dock
 ### Requirements
 
 - **REQ-001**: The package MUST install the `docker-compose` binary (or `docker-compose.exe` on Windows) into the Python environment's `bin/` (or `Scripts/`) directory upon `pip install docker-compose-py`.
-- **REQ-002**: The package MUST support all platform/architecture combinations listed in Section 4 (Platform Matrix).
+- **REQ-002**: The package MUST support all platform/architecture combinations listed in Section 4 (Platform Matrix): Linux x86_64, Linux aarch64, macOS x86_64, macOS arm64, Windows x86_64 (AMD64), Windows arm64 (ARM64).
 - **REQ-003**: Each downloaded binary MUST be verified against its SHA-256 checksum before installation.
 - **REQ-004**: The package version MUST follow the scheme `<docker-compose-version>.<packaging-revision>` (e.g., `5.3.1.0`).
 - **REQ-005**: A shell script (`update_version.sh`) MUST be provided to regenerate `setup.cfg` for a new Docker Compose release.
@@ -88,6 +88,7 @@ The primary intended use is as a `pre-commit` hook for validating/verifying Dock
 - **CON-003**: Windows x86 (32-bit / `win32` / `platform_machine == "x86"`) is NOT supported. Only Windows x86_64 and Windows aarch64 are supported.
 - **CON-004**: Linux i686 (32-bit / `platform_machine == "i686"`) is NOT supported. Docker Compose v5.x does not publish a Linux 386 binary.
 - **CON-005**: Python `>= 3.11` is required (matching openfga-cli-py precedent and modern toolchain needs).
+- **CON-010**: Exotic Linux architectures (armv6l, armv7l, ppc64le, riscv64, s390x) are NOT supported. PyPI does not accept wheel tags for these architectures, making them non-publishable.
 - **CON-006**: The wheel produced is NOT a pure-Python wheel (`root_is_pure = False` in `bdist_wheel`); it is tagged `py2.py3-none-<platform>`.
 - **CON-007**: PyPI rejects bare `linux_*` platform tags. Linux wheels MUST use the `manylinux` standard (minimum `manylinux_2_17`). The `_PYTHON_HOST_PLATFORM` environment variable MUST be set to `manylinux_2_17_{arch}` before running `pip wheel`.
 - **CON-008**: The macOS `_PYTHON_HOST_PLATFORM` value MUST use dashes in the format `macosx-X.Y-arch` (e.g., `macosx-10.9-x86_64`). Using underscores causes `wheel.macosx_libfile.calculate_macosx_platform_tag` to crash with `ValueError: not enough values to unpack`.
@@ -260,17 +261,12 @@ setup(cmdclass=cmdclass)
 |----------|---------------|--------------------|----------------|---------|
 | Linux x86_64 | `linux` | `x86_64` | `docker-compose-linux-x86_64` | `f9ebc6ebdb19d769b793c245a736caaeb198c62587f13b25c660c13b4987f959` |
 | Linux aarch64 | `linux` | `aarch64` | `docker-compose-linux-aarch64` | `aa611e811d0ea25897839c404bfb5bf93ce706dc51c500a4457890f5d0606a86` |
-| Linux armv6 | `linux` | `armv6l` | `docker-compose-linux-armv6` | `899607529e5e752cbdaec84b73e994378cf8f27f3d626a5a6df56f7511c00304` |
-| Linux armv7 | `linux` | `armv7l` | `docker-compose-linux-armv7` | `69276acb37ea70023cf85a8180e869c0cfc8cb5a3e672821400aa58dea56e2e8` |
-| Linux ppc64le | `linux` | `ppc64le` | `docker-compose-linux-ppc64le` | `3280a0dcc7874c2a564ca1224c5669364bc1a5d83ae7153a9c0182fd76fd2102` |
-| Linux riscv64 | `linux` | `riscv64` | `docker-compose-linux-riscv64` | `e237f165e0fd5472d147db274f0fb5dcdaab4384c36634178307f4c8e965d904` |
-| Linux s390x | `linux` | `s390x` | `docker-compose-linux-s390x` | `3889c8d1677bee347297c8f0a73bc517b5c35da18781812942aef8a87eac9011` |
 | macOS x86_64 | `darwin` | `x86_64` | `docker-compose-darwin-x86_64` | `56620a2e87e789147b9b1cc5d37eeecec2332e2cdf5c2d58a68f999f2dc416ca` |
 | macOS arm64 | `darwin` | `arm64` | `docker-compose-darwin-aarch64` | `32691ba1196d819fa68cbdc0aad9a5569e730a35ae40c6fdd8458110ecd69488` |
 | Windows x86_64 | `win32` | `AMD64` | `docker-compose-windows-x86_64.exe` | `6d36cc701393c066d67ebc77773b718d8c738bc4ccb350fbf1dc0e6a09f44cb9` |
 | Windows aarch64 | `win32` | `ARM64` | `docker-compose-windows-aarch64.exe` | `5871699d19ee22904f7d1a7ce7e9e6b5a582f6cf9286afd0117ad601cc6737d6` |
 
-> **Explicitly NOT supported**: Windows x86 (32-bit / `win32` / `platform_machine == "x86"`) — no asset published by Docker Compose. Linux i686 (32-bit) — no asset published by Docker Compose v5.x.
+> **Explicitly NOT supported**: Windows x86 (32-bit / `win32` / `platform_machine == "x86"`) — no asset published by Docker Compose. Linux i686 (32-bit) — no asset published by Docker Compose v5.x. Exotic Linux architectures (armv6l, armv7l, ppc64le, riscv64, s390x) — PyPI does not accept wheel tags for these architectures.
 
 ### 4.5 `update_version.sh` Shell Script Contract
 
@@ -279,7 +275,7 @@ The script accepts one required argument: the new Docker Compose version string 
 **Behaviour**:
 1. Validate that the version argument is provided and matches `^[0-9]+\.[0-9]+\.[0-9]+$`.
 2. Download `checksums.txt` from `https://github.com/docker/compose/releases/download/v<VERSION>/checksums.txt`.
-3. Parse SHA-256 values for the 11 relevant binary assets (7 Linux architectures, 2 macOS, 2 Windows).
+3. Parse SHA-256 values for the 6 relevant binary assets (2 Linux architectures, 2 macOS, 2 Windows).
 4. Generate a new `setup.cfg` by substituting the old version, URLs, and SHA-256 values.
 5. Write the updated `setup.cfg` to the repository root (overwriting the existing file).
 6. Print a summary of changes made.
@@ -295,11 +291,6 @@ The script accepts one required argument: the new Docker Compose version string 
 ```
 docker-compose-linux-x86_64
 docker-compose-linux-aarch64
-docker-compose-linux-armv6
-docker-compose-linux-armv7
-docker-compose-linux-ppc64le
-docker-compose-linux-riscv64
-docker-compose-linux-s390x
 docker-compose-darwin-x86_64
 docker-compose-darwin-aarch64
 docker-compose-windows-x86_64.exe
@@ -379,24 +370,14 @@ echo "Updated SHA-256 hashes for 11 platforms."
 #   contents: write       # required for GitHub Release asset upload
 
 # Job 1: build-and-test
-# Matrix (include-style, 9 entries — one per wheel platform with native runners):
+# Matrix (include-style, 6 entries — one per wheel platform with native runners):
 #
-#   Primary platforms (smoke-tested with docker-compose version):
 #   - os: ubuntu-latest,    arch: '',   wheel-plat: manylinux_2_17_x86_64
 #   - os: ubuntu-24.04-arm, arch: '',   wheel-plat: manylinux_2_17_aarch64
 #   - os: macos-15-intel,   arch: '',   wheel-plat: macosx-10.9-x86_64     # dashes required
 #   - os: macos-latest,     arch: '',   wheel-plat: macosx-11.0-arm64       # dashes required
 #   - os: windows-latest,   arch: x64,  wheel-plat: win_amd64
 #   - os: windows-11-arm,   arch: '',   wheel-plat: win_arm64
-#
-#   Exotic Linux platforms (wheel built only; no native runner for smoke test):
-#   - os: ubuntu-latest,    arch: '',   wheel-plat: manylinux_2_17_armv7l
-#   - os: ubuntu-latest,    arch: '',   wheel-plat: manylinux_2_17_ppc64le
-#   - os: ubuntu-latest,    arch: '',   wheel-plat: manylinux_2_17_s390x
-#   - os: ubuntu-latest,    arch: '',   wheel-plat: manylinux_2_17_riscv64
-#
-# NOTE: armv6l wheels use manylinux_2_17_armv6l tag but armv6 has no reliable
-# GitHub-hosted runner; build on ubuntu-latest with _PYTHON_HOST_PLATFORM override.
 #
 # Steps per job:
 #   - actions/checkout
@@ -422,27 +403,15 @@ echo "Updated SHA-256 hashes for 11 platforms."
 |--------|--------|------------------------------------------|--------------|-----------|
 | `ubuntu-latest` | — | `manylinux_2_17_x86_64` | `manylinux_2_17_x86_64` | Yes |
 | `ubuntu-24.04-arm` | — | `manylinux_2_17_aarch64` | `manylinux_2_17_aarch64` | Yes |
-| `ubuntu-latest` | — | `manylinux_2_17_armv7l` | `manylinux_2_17_armv7l` | No (cross-build) |
-| `ubuntu-latest` | — | `manylinux_2_17_armv6l` | `manylinux_2_17_armv6l` | No (cross-build) |
-| `ubuntu-latest` | — | `manylinux_2_17_ppc64le` | `manylinux_2_17_ppc64le` | No (cross-build) |
-| `ubuntu-latest` | — | `manylinux_2_17_s390x` | `manylinux_2_17_s390x` | No (cross-build) |
-| `ubuntu-latest` | — | `manylinux_2_17_riscv64` | `manylinux_2_17_riscv64` | No (cross-build) |
 | `macos-15-intel` | — | `macosx-10.9-x86_64` | `macosx_10_9_x86_64` | Yes |
 | `macos-latest` (arm64) | — | `macosx-11.0-arm64` | `macosx_11_0_arm64` | Yes |
 | `windows-latest` | `x64` | `win_amd64` | `win_amd64` | Yes |
 | `windows-11-arm` | — | `win_arm64` | `win_arm64` | Yes |
 
-> **Note**: For cross-build entries (no native runner), the matrix entry MUST set `smoke: false` and the workflow step `docker-compose version` MUST be gated with `if: matrix.smoke != false`. The wheel is still built and published correctly; only the runtime verification is skipped.
-
 **GitHub Release wheel filenames** (produced by `bdist_wheel`):
 ```
 docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_x86_64.whl
 docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_aarch64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_armv7l.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_armv6l.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_ppc64le.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_s390x.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_riscv64.whl
 docker_compose_py-5.3.1.0-py2.py3-none-macosx_10_9_x86_64.whl
 docker_compose_py-5.3.1.0-py2.py3-none-macosx_11_0_arm64.whl
 docker_compose_py-5.3.1.0-py2.py3-none-win_amd64.whl
@@ -548,11 +517,11 @@ To validate a non-default file:
 - **AC-002**: Given a macOS arm64 environment, when `pip install docker-compose-py` is run, then `docker-compose version` exits with code `0`.
 - **AC-003**: Given a Windows AMD64 environment, when `pip install docker-compose-py` is run, then `docker-compose.exe` is available in the `Scripts/` directory and `docker-compose version` succeeds.
 - **AC-004**: Given any supported platform, when the downloaded binary SHA-256 does not match the value in `setup.cfg`, then installation MUST fail with a checksum error.
-- **AC-005**: Given `./update_version.sh 5.4.0` is run, when v5.4.0 exists on GitHub releases with a valid `checksums.txt`, then `setup.cfg` is updated with version `5.4.0.0` and correct SHA-256 hashes for all 11 platforms.
+- **AC-005**: Given `./update_version.sh 5.4.0` is run, when v5.4.0 exists on GitHub releases with a valid `checksums.txt`, then `setup.cfg` is updated with version `5.4.0.0` and correct SHA-256 hashes for all 6 platforms.
 - **AC-006**: Given `./update_version.sh` is run without arguments, then the script exits with code `1` and prints usage instructions.
-- **AC-007**: Given a git tag `v5.3.1.0` is pushed, when the GitHub Actions `main.yml` workflow completes, then 11 platform-tagged wheels are published to PyPI under the `oss-robin` account.
+- **AC-007**: Given a git tag `v5.3.1.0` is pushed, when the GitHub Actions `main.yml` workflow completes, then 6 platform-tagged wheels are published to PyPI under the `oss-robin` account.
 - **AC-008**: Given the package is installed, when `python -c "import subprocess; subprocess.run(['docker-compose', 'version'], check=True)"` is executed, then it succeeds without error.
-- **AC-009**: Given a git tag `v5.3.1.0` is pushed, when the `publish-github-release` job completes, then the GitHub Release contains 11 `.whl` assets downloadable via the GitHub Releases API.
+- **AC-009**: Given a git tag `v5.3.1.0` is pushed, when the `publish-github-release` job completes, then the GitHub Release contains 6 `.whl` assets downloadable via the GitHub Releases API.
 - **AC-010**: Given a `.pre-commit-config.yaml` referencing this repo at `rev: v5.3.1.0` with `id: docker-compose`, when `pre-commit run docker-compose` is executed in a directory with a valid `compose.yml`, then the hook exits with code `0`.
 - **AC-011**: Given a pre-commit hook run on a directory with an invalid compose file, when `docker-compose config --quiet` is invoked, then it exits with a non-zero code and pre-commit reports a failure.
 - **AC-012**: Given a `setup.cfg` entry for any platform, when inspected, there MUST be no `extract` or `extract_path` key present — the binary is downloaded directly without archive extraction.
@@ -560,7 +529,7 @@ To validate a non-default file:
 - **AC-014**: Given a Windows x86 (32-bit) environment, when `pip install docker-compose-py` is attempted, then `setuptools-download` MUST NOT find a matching marker and installation MUST fail with no matching platform error (Windows 32-bit is explicitly unsupported).
 - **AC-015**: Given `pip wheel --no-deps --no-build-isolation --wheel-dir dist .` is run on Ubuntu with `_PYTHON_HOST_PLATFORM=manylinux_2_17_x86_64`, then the produced wheel filename ends with `-manylinux_2_17_x86_64.whl`; without setting `_PYTHON_HOST_PLATFORM` the wheel ends with `-linux_x86_64.whl` and MUST be rejected by PyPI.
 - **AC-016**: Given `setup.py` is imported in an environment where both `setuptools.command.bdist_wheel` and `wheel.bdist_wheel` are unavailable, then `cmdclass` is `{}` and a `py3-none-any.whl` MUST NOT be published to PyPI.
-- **AC-017**: Given a Linux armv6l environment, when `pip install docker-compose-py` is run, then the `docker-compose` binary for armv6 is available and `docker-compose version` succeeds.
+- **AC-017**: ~~Removed~~ Linux armv6l is no longer a supported platform (PyPI does not accept this wheel tag).
 
 ---
 
@@ -572,8 +541,8 @@ To validate a non-default file:
   - *Integration*: Full install on each platform via GitHub Actions matrix.
 - **Frameworks**: `pytest` for smoke/functional tests, `make` (quality target), `pip` (installation), native shell for binary invocation.
 - **Test Data Management**: A minimal `compose.yml` fixture file is placed in `tests/fixtures/compose.yml` for config validation smoke testing.
-- **CI/CD Integration**: GitHub Actions `main.yml` runs on every push/PR; on tag push it runs three jobs: `build-and-test` (11-platform matrix) → `publish-pypi` (parallel with) `publish-github-release`.
-- **Smoke test gating**: Matrix entries for exotic Linux architectures (armv6l, armv7l, ppc64le, s390x, riscv64) set `smoke: false` to skip binary execution tests since no native GitHub-hosted runner exists.
+- **CI/CD Integration**: GitHub Actions `main.yml` runs on every push/PR; on tag push it runs three jobs: `build-and-test` (6-platform matrix) → `publish-pypi` (parallel with) `publish-github-release`.
+- **Smoke test gating**: All 6 matrix entries use native GitHub-hosted runners and run full smoke tests.
 - **Coverage Requirements**: N/A — the package wraps a pre-built binary with no Python logic to measure.
 - **Performance Testing**: Not required; binary download time is acceptable at install time only.
 

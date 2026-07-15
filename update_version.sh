@@ -29,19 +29,13 @@ get_sha() {
 
 SHA_LINUX_X86_64=$(get_sha "docker-compose-linux-x86_64")
 SHA_LINUX_AARCH64=$(get_sha "docker-compose-linux-aarch64")
-SHA_LINUX_ARMV6=$(get_sha "docker-compose-linux-armv6")
-SHA_LINUX_ARMV7=$(get_sha "docker-compose-linux-armv7")
-SHA_LINUX_PPC64LE=$(get_sha "docker-compose-linux-ppc64le")
-SHA_LINUX_RISCV64=$(get_sha "docker-compose-linux-riscv64")
-SHA_LINUX_S390X=$(get_sha "docker-compose-linux-s390x")
 SHA_DARWIN_X86_64=$(get_sha "docker-compose-darwin-x86_64")
 SHA_DARWIN_AARCH64=$(get_sha "docker-compose-darwin-aarch64")
 SHA_WINDOWS_X86_64=$(get_sha "docker-compose-windows-x86_64.exe")
 SHA_WINDOWS_AARCH64=$(get_sha "docker-compose-windows-aarch64.exe")
 
 # Validate all checksums were found
-for var in SHA_LINUX_X86_64 SHA_LINUX_AARCH64 SHA_LINUX_ARMV6 SHA_LINUX_ARMV7 \
-           SHA_LINUX_PPC64LE SHA_LINUX_RISCV64 SHA_LINUX_S390X \
+for var in SHA_LINUX_X86_64 SHA_LINUX_AARCH64 \
            SHA_DARWIN_X86_64 SHA_DARWIN_AARCH64 \
            SHA_WINDOWS_X86_64 SHA_WINDOWS_AARCH64; do
     if [[ -z "${!var}" ]]; then
@@ -86,31 +80,6 @@ download_scripts =
     sha256 = ${SHA_LINUX_AARCH64}
     [docker-compose]
     group = docker-compose-binary
-    marker = sys_platform == "linux" and platform_machine == "armv6l"
-    url = ${RELEASE_BASE}/docker-compose-linux-armv6
-    sha256 = ${SHA_LINUX_ARMV6}
-    [docker-compose]
-    group = docker-compose-binary
-    marker = sys_platform == "linux" and platform_machine == "armv7l"
-    url = ${RELEASE_BASE}/docker-compose-linux-armv7
-    sha256 = ${SHA_LINUX_ARMV7}
-    [docker-compose]
-    group = docker-compose-binary
-    marker = sys_platform == "linux" and platform_machine == "ppc64le"
-    url = ${RELEASE_BASE}/docker-compose-linux-ppc64le
-    sha256 = ${SHA_LINUX_PPC64LE}
-    [docker-compose]
-    group = docker-compose-binary
-    marker = sys_platform == "linux" and platform_machine == "riscv64"
-    url = ${RELEASE_BASE}/docker-compose-linux-riscv64
-    sha256 = ${SHA_LINUX_RISCV64}
-    [docker-compose]
-    group = docker-compose-binary
-    marker = sys_platform == "linux" and platform_machine == "s390x"
-    url = ${RELEASE_BASE}/docker-compose-linux-s390x
-    sha256 = ${SHA_LINUX_S390X}
-    [docker-compose]
-    group = docker-compose-binary
     marker = sys_platform == "darwin" and platform_machine == "x86_64"
     url = ${RELEASE_BASE}/docker-compose-darwin-x86_64
     sha256 = ${SHA_DARWIN_X86_64}
@@ -132,4 +101,4 @@ download_scripts =
 EOF
 
 echo "setup.cfg updated to version ${VERSION}.0"
-echo "Updated SHA-256 hashes for 11 platforms."
+echo "Updated SHA-256 hashes for 6 platforms."

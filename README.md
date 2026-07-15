@@ -1,5 +1,8 @@
 # docker-compose-py
 
+[![CI](https://github.com/neeve-ai/docker-compose-py/actions/workflows/main.yml/badge.svg)](https://github.com/neeve-ai/docker-compose-py/actions/workflows/main.yml)
+[![PyPI](https://img.shields.io/pypi/v/docker-compose-py)](https://pypi.org/project/docker-compose-py/)
+
 A Python wrapper to provide a pip-installable
 [Docker Compose CLI (`docker-compose`)](https://github.com/docker/compose) binary.
 
@@ -52,12 +55,13 @@ To validate a non-default file:
 
 | Platform | Architecture |
 |----------|-------------|
-| Linux | x86_64, aarch64, armv6l, armv7l, ppc64le, riscv64, s390x |
+| Linux | x86_64, aarch64 |
 | macOS | x86_64, arm64 |
 | Windows | x86_64 (AMD64), arm64 (ARM64) |
 
-> **Note**: Windows x86 (32-bit) and Linux i686 are not supported — Docker Compose v5.x
-> does not publish binaries for these architectures.
+> **Note**: Only the two mainstream Linux architectures (x86_64 and aarch64) are supported,
+> as PyPI does not support exotic Linux wheel tags (armv6l, armv7l, ppc64le, riscv64, s390x)
+> in its registry. Windows x86 (32-bit) and Linux i686 are also unsupported.
 
 ## Updating to a new Docker Compose version
 
@@ -66,4 +70,4 @@ To validate a non-default file:
 ```
 
 This downloads the `checksums.txt` from the new release and regenerates `setup.cfg`
-with updated URLs and SHA-256 hashes for all 11 supported platforms.
+with updated URLs and SHA-256 hashes for all 6 supported platforms.

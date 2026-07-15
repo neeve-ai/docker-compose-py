@@ -131,11 +131,6 @@ EXPECTED_PLATFORMS = [
     # (marker snippet, url fragment)
     ('sys_platform == "linux" and platform_machine == "x86_64"',  "docker-compose-linux-x86_64"),
     ('sys_platform == "linux" and platform_machine == "aarch64"', "docker-compose-linux-aarch64"),
-    ('sys_platform == "linux" and platform_machine == "armv6l"',  "docker-compose-linux-armv6"),
-    ('sys_platform == "linux" and platform_machine == "armv7l"',  "docker-compose-linux-armv7"),
-    ('sys_platform == "linux" and platform_machine == "ppc64le"', "docker-compose-linux-ppc64le"),
-    ('sys_platform == "linux" and platform_machine == "riscv64"', "docker-compose-linux-riscv64"),
-    ('sys_platform == "linux" and platform_machine == "s390x"',   "docker-compose-linux-s390x"),
     ('sys_platform == "darwin" and platform_machine == "x86_64"', "docker-compose-darwin-x86_64"),
     ('sys_platform == "darwin" and platform_machine == "arm64"',  "docker-compose-darwin-aarch64"),
     ('sys_platform == "win32" and platform_machine == "AMD64"',   "docker-compose-windows-x86_64.exe"),
@@ -144,14 +139,14 @@ EXPECTED_PLATFORMS = [
 
 
 def test_setup_cfg_platform_count():
-    """setup.cfg contains entries for exactly 11 platforms."""
+    """setup.cfg contains entries for exactly 6 platforms."""
     content = SETUP_CFG.read_text()
     marker_count = content.count("marker =")
-    assert marker_count == 11, f"Expected 11 platform entries, found {marker_count}"
+    assert marker_count == 6, f"Expected 6 platform entries, found {marker_count}"
 
 
 def test_setup_cfg_all_platforms_present():
-    """All 11 expected platform markers and URL fragments exist in setup.cfg."""
+    """All 6 expected platform markers and URL fragments exist in setup.cfg."""
     content = SETUP_CFG.read_text()
     for marker, url_fragment in EXPECTED_PLATFORMS:
         assert marker in content, f"Missing marker: {marker}"
