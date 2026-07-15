@@ -170,9 +170,9 @@ def test_setup_cfg_no_linux_i686():
 
 
 def test_setup_cfg_version():
-    """Package version must be 5.3.1.0 (REQ-004)."""
+    """Package version must be 5.3.1.1 (REQ-004)."""
     content = SETUP_CFG.read_text()
-    assert "version = 5.3.1.0" in content
+    assert "version = 5.3.1.1" in content
 
 
 def test_setup_cfg_sha256_present():

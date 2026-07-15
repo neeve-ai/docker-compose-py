@@ -15,7 +15,7 @@ pip install docker-compose-py
 Or install a platform wheel directly from a GitHub Release (for air-gapped/offline use):
 
 ```bash
-pip install https://github.com/neeve-ai/docker-compose-py/releases/download/v5.3.1.0/docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_x86_64.whl
+pip install https://github.com/neeve-ai/docker-compose-py/releases/download/v5.3.1.1/docker_compose_py-5.3.1.1-py2.py3-none-manylinux_2_17_x86_64.whl
 ```
 
 ## Usage
@@ -33,7 +33,7 @@ Add to your `.pre-commit-config.yaml`:
 
 ```yaml
 - repo: https://github.com/neeve-ai/docker-compose-py
-  rev: v5.3.1.0
+  rev: v5.3.1.1
   hooks:
   - id: docker-compose
 ```
@@ -45,7 +45,7 @@ To validate a non-default file:
 
 ```yaml
 - repo: https://github.com/neeve-ai/docker-compose-py
-  rev: v5.3.1.0
+  rev: v5.3.1.1
   hooks:
   - id: docker-compose
     args: [-f, path/to/docker-compose.yml, config, --quiet]

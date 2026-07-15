@@ -65,7 +65,7 @@ The primary intended use is as a `pre-commit` hook for validating/verifying Dock
 - **REQ-001**: The package MUST install the `docker-compose` binary (or `docker-compose.exe` on Windows) into the Python environment's `bin/` (or `Scripts/`) directory upon `pip install docker-compose-py`.
 - **REQ-002**: The package MUST support all platform/architecture combinations listed in Section 4 (Platform Matrix): Linux x86_64, Linux aarch64, macOS x86_64, macOS arm64, Windows x86_64 (AMD64), Windows arm64 (ARM64).
 - **REQ-003**: Each downloaded binary MUST be verified against its SHA-256 checksum before installation.
-- **REQ-004**: The package version MUST follow the scheme `<docker-compose-version>.<packaging-revision>` (e.g., `5.3.1.0`).
+- **REQ-004**: The package version MUST follow the scheme `<docker-compose-version>.<packaging-revision>` (e.g., `5.3.1.1`).
 - **REQ-005**: A shell script (`update_version.sh`) MUST be provided to regenerate `setup.cfg` for a new Docker Compose release.
 - **REQ-006**: The package MUST be publishable to PyPI under the `oss-robin` account using a PyPI API token stored as a GitHub Actions secret (`PYPI_API_TOKEN`) and the `pypa/gh-action-pypi-publish@release/v1` action.
 - **REQ-007**: Platform-tagged wheels MUST be built and uploaded so that `pip install` does not need to recompile anything.
@@ -140,7 +140,7 @@ docker-compose-py/
 ```ini
 [metadata]
 name = docker-compose-py
-version = 5.3.1.0
+version = 5.3.1.1
 description = Python wrapper around invoking the Docker Compose CLI (https://github.com/docker/compose)
 long_description = file: README.md
 long_description_content_type = text/markdown
@@ -363,7 +363,7 @@ echo "Updated SHA-256 hashes for 11 platforms."
 # Triggers:
 #   push:
 #     branches: [main, test-me-*]
-#     tags: 'v*'          # e.g. v5.3.1.0
+#     tags: 'v*'          # e.g. v5.3.1.1
 #   pull_request:
 #
 # Permissions (top-level):
@@ -410,12 +410,12 @@ echo "Updated SHA-256 hashes for 11 platforms."
 
 **GitHub Release wheel filenames** (produced by `bdist_wheel`):
 ```
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_x86_64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-manylinux_2_17_aarch64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-macosx_10_9_x86_64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-macosx_11_0_arm64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-win_amd64.whl
-docker_compose_py-5.3.1.0-py2.py3-none-win_arm64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-manylinux_2_17_x86_64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-manylinux_2_17_aarch64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-macosx_10_9_x86_64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-macosx_11_0_arm64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-win_amd64.whl
+docker_compose_py-5.3.1.1-py2.py3-none-win_arm64.whl
 ```
 
 ### 4.7 `.pre-commit-hooks.yaml`
@@ -481,7 +481,7 @@ A Python wrapper to provide a pip-installable
 
 Or install a platform wheel directly from a GitHub Release (for air-gapped/offline use):
 
-    pip install https://github.com/neeve-ai/docker-compose-py/releases/download/v5.3.1.0/docker_compose_py-5.3.1.0-py2.py3-none-linux_x86_64.whl
+    pip install https://github.com/neeve-ai/docker-compose-py/releases/download/v5.3.1.1/docker_compose_py-5.3.1.1-py2.py3-none-linux_x86_64.whl
 
 ## Usage
 
@@ -495,7 +495,7 @@ After installation, the `docker-compose` binary is available in your environment
 Add to your `.pre-commit-config.yaml`:
 
     - repo: https://github.com/neeve-ai/docker-compose-py
-      rev: v5.3.1.0
+      rev: v5.3.1.1
       hooks:
       - id: docker-compose
 
@@ -503,7 +503,7 @@ This runs `docker-compose config --quiet` to validate the default compose file.
 To validate a non-default file:
 
     - repo: https://github.com/neeve-ai/docker-compose-py
-      rev: v5.3.1.0
+      rev: v5.3.1.1
       hooks:
       - id: docker-compose
         args: [-f, path/to/docker-compose.yml, config, --quiet]
@@ -519,10 +519,10 @@ To validate a non-default file:
 - **AC-004**: Given any supported platform, when the downloaded binary SHA-256 does not match the value in `setup.cfg`, then installation MUST fail with a checksum error.
 - **AC-005**: Given `./update_version.sh 5.4.0` is run, when v5.4.0 exists on GitHub releases with a valid `checksums.txt`, then `setup.cfg` is updated with version `5.4.0.0` and correct SHA-256 hashes for all 6 platforms.
 - **AC-006**: Given `./update_version.sh` is run without arguments, then the script exits with code `1` and prints usage instructions.
-- **AC-007**: Given a git tag `v5.3.1.0` is pushed, when the GitHub Actions `main.yml` workflow completes, then 6 platform-tagged wheels are published to PyPI under the `oss-robin` account.
+- **AC-007**: Given a git tag `v5.3.1.1` is pushed, when the GitHub Actions `main.yml` workflow completes, then 6 platform-tagged wheels are published to PyPI under the `oss-robin` account.
 - **AC-008**: Given the package is installed, when `python -c "import subprocess; subprocess.run(['docker-compose', 'version'], check=True)"` is executed, then it succeeds without error.
-- **AC-009**: Given a git tag `v5.3.1.0` is pushed, when the `publish-github-release` job completes, then the GitHub Release contains 6 `.whl` assets downloadable via the GitHub Releases API.
-- **AC-010**: Given a `.pre-commit-config.yaml` referencing this repo at `rev: v5.3.1.0` with `id: docker-compose`, when `pre-commit run docker-compose` is executed in a directory with a valid `compose.yml`, then the hook exits with code `0`.
+- **AC-009**: Given a git tag `v5.3.1.1` is pushed, when the `publish-github-release` job completes, then the GitHub Release contains 6 `.whl` assets downloadable via the GitHub Releases API.
+- **AC-010**: Given a `.pre-commit-config.yaml` referencing this repo at `rev: v5.3.1.1` with `id: docker-compose`, when `pre-commit run docker-compose` is executed in a directory with a valid `compose.yml`, then the hook exits with code `0`.
 - **AC-011**: Given a pre-commit hook run on a directory with an invalid compose file, when `docker-compose config --quiet` is invoked, then it exits with a non-zero code and pre-commit reports a failure.
 - **AC-012**: Given a `setup.cfg` entry for any platform, when inspected, there MUST be no `extract` or `extract_path` key present — the binary is downloaded directly without archive extraction.
 - **AC-013**: Given a Windows ARM64 environment, when `pip install docker-compose-py` is run, then the ARM64 `docker-compose.exe` is available and `docker-compose version` succeeds.
@@ -672,7 +672,7 @@ The checksums file uses `*` prefix on filenames: `<sha256> *<filename>`. The `up
 7. `./update_version.sh` without arguments exits with code `1`.
 8. `./update_version.sh 5.4.0` (given a valid release) produces a `setup.cfg` with version `5.4.0.0` and 11 valid SHA-256 entries.
 9. The `.pre-commit-hooks.yaml` hook definition includes `pass_filenames: false` (GUD-006).
-10. The GitHub Release for `v5.3.1.0` contains exactly 11 `.whl` assets (one per platform wheel tag).
+10. The GitHub Release for `v5.3.1.1` contains exactly 11 `.whl` assets (one per platform wheel tag).
 
 ---
 
