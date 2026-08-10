@@ -24,10 +24,8 @@ if [[ -z "$OLD_VERSION" ]]; then
     echo "Error: Could not read current version from setup.cfg" >&2
     exit 1
 fi
-OLD_MAJOR_MINOR=$(echo "$OLD_VERSION" | cut -d. -f1-2)
 
 NEW_VERSION="${VERSION}.0"
-NEW_MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1-2)
 
 echo "Updating ${OLD_VERSION} → ${NEW_VERSION}"
 
@@ -122,12 +120,10 @@ echo "Updated SHA-256 hashes for 6 platforms."
 TEST_FILE="${SCRIPT_DIR}/tests/test_docker_compose.py"
 sed -i.bak \
     -e "s/version = ${OLD_VERSION}/version = ${NEW_VERSION}/g" \
-    -e "s/\"${OLD_MAJOR_MINOR}\"/\"${NEW_MAJOR_MINOR}\"/g" \
-    -e "s/v${OLD_MAJOR_MINOR}\./v${NEW_MAJOR_MINOR}./g" \
     -e "s/must be ${OLD_VERSION}/must be ${NEW_VERSION}/g" \
     "${TEST_FILE}"
 rm -f "${TEST_FILE}.bak"
-echo "tests/test_docker_compose.py updated (${OLD_VERSION} → ${NEW_VERSION}, ${OLD_MAJOR_MINOR} → ${NEW_MAJOR_MINOR})"
+echo "tests/test_docker_compose.py updated (${OLD_VERSION} → ${NEW_VERSION})"
 
 # Update README.md
 README_FILE="${SCRIPT_DIR}/README.md"
