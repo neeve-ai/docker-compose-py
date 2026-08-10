@@ -16,6 +16,21 @@ if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Capture old version from setup.cfg before any writes
+OLD_VERSION=$(grep "^version = " "${SCRIPT_DIR}/setup.cfg" | awk '{print $3}')
+if [[ -z "$OLD_VERSION" ]]; then
+    echo "Error: Could not read current version from setup.cfg" >&2
+    exit 1
+fi
+OLD_MAJOR_MINOR=$(echo "$OLD_VERSION" | cut -d. -f1-2)
+
+NEW_VERSION="${VERSION}.0"
+NEW_MAJOR_MINOR=$(echo "$VERSION" | cut -d. -f1-2)
+
+echo "Updating ${OLD_VERSION} → ${NEW_VERSION}"
+
 RELEASE_BASE="https://github.com/docker/compose/releases/download/v${VERSION}"
 CHECKSUMS_URL="${RELEASE_BASE}/checksums.txt"
 
@@ -100,5 +115,25 @@ download_scripts =
     sha256 = ${SHA_WINDOWS_AARCH64}
 EOF
 
-echo "setup.cfg updated to version ${VERSION}.0"
+echo "setup.cfg updated to version ${NEW_VERSION}"
 echo "Updated SHA-256 hashes for 6 platforms."
+
+# Update tests/test_docker_compose.py
+TEST_FILE="${SCRIPT_DIR}/tests/test_docker_compose.py"
+sed -i.bak \
+    -e "s/version = ${OLD_VERSION}/version = ${NEW_VERSION}/g" \
+    -e "s/\"${OLD_MAJOR_MINOR}\"/\"${NEW_MAJOR_MINOR}\"/g" \
+    -e "s/v${OLD_MAJOR_MINOR}\./v${NEW_MAJOR_MINOR}./g" \
+    -e "s/must be ${OLD_VERSION}/must be ${NEW_VERSION}/g" \
+    "${TEST_FILE}"
+rm -f "${TEST_FILE}.bak"
+echo "tests/test_docker_compose.py updated (${OLD_VERSION} → ${NEW_VERSION}, ${OLD_MAJOR_MINOR} → ${NEW_MAJOR_MINOR})"
+
+# Update README.md
+README_FILE="${SCRIPT_DIR}/README.md"
+sed -i.bak \
+    -e "s/v${OLD_VERSION}/v${NEW_VERSION}/g" \
+    -e "s/docker_compose_py-${OLD_VERSION}/docker_compose_py-${NEW_VERSION}/g" \
+    "${README_FILE}"
+rm -f "${README_FILE}.bak"
+echo "README.md updated (v${OLD_VERSION} → v${NEW_VERSION})"
