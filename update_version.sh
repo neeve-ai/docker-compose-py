@@ -118,9 +118,10 @@ echo "Updated SHA-256 hashes for 6 platforms."
 
 # Update tests/test_docker_compose.py
 TEST_FILE="${SCRIPT_DIR}/tests/test_docker_compose.py"
+OLD_VERSION_RE=${OLD_VERSION//./\\.}
 sed -i.bak \
-    -e "s/version = ${OLD_VERSION}/version = ${NEW_VERSION}/g" \
-    -e "s/must be ${OLD_VERSION}/must be ${NEW_VERSION}/g" \
+    -e "s/version = ${OLD_VERSION_RE}/version = ${NEW_VERSION}/g" \
+    -e "s/must be ${OLD_VERSION_RE}/must be ${NEW_VERSION}/g" \
     "${TEST_FILE}"
 rm -f "${TEST_FILE}.bak"
 echo "tests/test_docker_compose.py updated (${OLD_VERSION} → ${NEW_VERSION})"
@@ -128,8 +129,8 @@ echo "tests/test_docker_compose.py updated (${OLD_VERSION} → ${NEW_VERSION})"
 # Update README.md
 README_FILE="${SCRIPT_DIR}/README.md"
 sed -i.bak \
-    -e "s/v${OLD_VERSION}/v${NEW_VERSION}/g" \
-    -e "s/docker_compose_py-${OLD_VERSION}/docker_compose_py-${NEW_VERSION}/g" \
+    -e "s/v${OLD_VERSION_RE}/v${NEW_VERSION}/g" \
+    -e "s/docker_compose_py-${OLD_VERSION_RE}/docker_compose_py-${NEW_VERSION}/g" \
     "${README_FILE}"
 rm -f "${README_FILE}.bak"
 echo "README.md updated (v${OLD_VERSION} → v${NEW_VERSION})"
